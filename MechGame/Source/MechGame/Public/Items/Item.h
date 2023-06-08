@@ -29,7 +29,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Rotation")
 	float Rotate = 50.f;
 	UPROPERTY(VisibleAnywhere)
-	UStaticMeshComponent* ItemMesh;
+	TObjectPtr<UStaticMeshComponent> ItemMesh;
 };
 
 template <typename Type>
