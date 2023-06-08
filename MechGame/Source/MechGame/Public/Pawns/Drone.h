@@ -19,10 +19,7 @@ class MECHGAME_API ADrone : public APawn
 
 public:
 	ADrone();
-	
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 protected:
