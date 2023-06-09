@@ -81,6 +81,53 @@ void APlayerMechCharacter::Interact()
 	}
 }
 
+void APlayerMechCharacter::PlayAttackMontage() const
+{
+	if(UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); AnimInstance && AttackMontage)
+	{
+		AnimInstance->Montage_Play(AttackMontage);
+		const int32 Selection = FMath::RandRange(0, 2);
+		FName SectionName = FName();
+		switch(Selection)
+		{
+		case 0:
+			SectionName = TEXT("Attack1");
+			break;
+		case 1:
+			SectionName = TEXT("Attack2");
+			break;
+		case 2:
+			SectionName = TEXT("Attack3");
+			break;
+		default:
+			SectionName = TEXT("Attack1");
+		}
+		AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+	}
+}
+
+void APlayerMechCharacter::AttackEnd()
+{
+	ActionStates = EActionStates::EAS_Unoccupied;
+}
+
+bool APlayerMechCharacter::CanAttack() const
+{
+	return ActionStates == EActionStates::EAS_Unoccupied &&
+		CharacterStates != ECharacterStates::ECS_Unequipped;
+}
+
+void APlayerMechCharacter::Attack()
+{
+	if(CanAttack())
+	{
+		PlayAttackMontage();
+		ActionStates = EActionStates::EAS_Attacking;
+		
+	}
+	
+}
+
 void APlayerMechCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -96,7 +143,8 @@ void APlayerMechCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerMechCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerMechCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerMechCharacter::Jump);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &APlayerMechCharacter::Interact);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &APlayerMechCharacter::Interact);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &APlayerMechCharacter::Attack);
 	}
 }
 

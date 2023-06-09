@@ -39,13 +39,28 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> InteractAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> AttackAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputMappingContext> MechMappingContext;
 
+	/**
+	 * Callback functions
+	 */
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Interact();
+	void Attack();
+
+	/**
+	 * Play montage functions
+	 */
+	void PlayAttackMontage() const;
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+	bool CanAttack() const;
 private:
 	ECharacterStates CharacterStates = ECharacterStates::ECS_Unequipped;
+	EActionStates ActionStates = EActionStates::EAS_Unoccupied;
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
@@ -57,6 +72,14 @@ private:
 	TObjectPtr<UGroomComponent> Eyebrows;
 	UPROPERTY(VisibleInstanceOnly)
 	TObjectPtr<AItem> OverlappingItem;
+
+
+
+	/**
+	 * Animation montages
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	TObjectPtr<UAnimMontage> AttackMontage;
 
 
 public:
