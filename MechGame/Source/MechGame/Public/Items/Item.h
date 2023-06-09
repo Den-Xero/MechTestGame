@@ -3,6 +3,8 @@
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
+class USphereComponent;
+
 UCLASS()
 class MECHGAME_API AItem : public AActor
 {
@@ -17,6 +19,11 @@ protected:
 	float TransformedSin() const;
 	UFUNCTION(BlueprintPure)
 	float TransformedCos() const;
+	UFUNCTION()
+	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
+	UFUNCTION()
+	void EndSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	
 	template<typename  Type>
 	static Type Avg(Type first, Type second);
 private:
@@ -30,6 +37,8 @@ private:
 	float Rotate = 50.f;
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> ItemMesh;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USphereComponent> Sphere;
 };
 
 template <typename Type>
