@@ -5,6 +5,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GroomComponent.h"
+#include "Items/Item.h"
+#include "Items/Weapons/Weapon.h"
 
 APlayerMechCharacter::APlayerMechCharacter()
 {
@@ -70,6 +72,15 @@ void APlayerMechCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void APlayerMechCharacter::Interact()
+{
+	if(AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem))
+	{
+		OverlappingWeapon->Equip(GetMesh(), TEXT("RightHandSocket"));
+		CharacterStates = ECharacterStates::ECS_EquippedOneHandedWeapon;
+	}
+}
+
 void APlayerMechCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -85,6 +96,7 @@ void APlayerMechCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerMechCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerMechCharacter::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &APlayerMechCharacter::Jump);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &APlayerMechCharacter::Interact);
 	}
 }
 

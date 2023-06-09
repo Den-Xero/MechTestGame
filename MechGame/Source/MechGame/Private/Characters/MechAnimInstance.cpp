@@ -23,5 +23,6 @@ void UMechAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		GroundSpeed = UKismetMathLibrary::VSizeXY(MechCharacterMovement->Velocity);
 		IsFalling = MechCharacterMovement->IsFalling();
+		CharacterStates = MechCharacter->GetCharacterStates();
 	}
 }

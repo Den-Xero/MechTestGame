@@ -1,5 +1,6 @@
 #include "Items/Item.h"
 
+#include "Characters/PlayerMechCharacter.h"
 #include "Components/SphereComponent.h"
 #include  "MechGame/DebugMacros.h"
 
@@ -38,20 +39,19 @@ float AItem::TransformedCos() const
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	const FString OtherActorName = OtherActor->GetName();
-	if(GEngine)
+	if(APlayerMechCharacter* MechCharacter = Cast<APlayerMechCharacter>(OtherActor))
 	{
-		GEngine->AddOnScreenDebugMessage(1, 30.f, FColor::Red, OtherActorName);
+		MechCharacter->SetOverlappingItem(this);
 	}
+	
 }
 
 void AItem::EndSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	const FString OtherActorName = OtherActor->GetName();
-	if(GEngine)
+	if(APlayerMechCharacter* MechCharacter = Cast<APlayerMechCharacter>(OtherActor))
 	{
-		GEngine->AddOnScreenDebugMessage(2, 30.f, FColor::Red, TEXT("Overlap is ended for  ") + OtherActorName);
+		MechCharacter->SetOverlappingItem(nullptr);
 	}
 }
 
