@@ -1,8 +1,16 @@
 #include "Items/Weapons/Weapon.h"
 
 #include "Characters/PlayerMechCharacter.h"
+#include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+
+AWeapon::AWeapon()
+{
+	WeaponDamageBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Weapon Damage Box "));
+	WeaponDamageBox->SetupAttachment(GetRootComponent());
+	WeaponDamageBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
 
 void AWeapon::Tick(float DeltaTime)
 {
@@ -25,6 +33,10 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
 		if(Sphere)
 		{
 			Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+		if(WeaponDamageBox)
+		{
+			WeaponDamageBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		}
 		
 	}
