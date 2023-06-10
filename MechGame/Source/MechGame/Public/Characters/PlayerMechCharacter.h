@@ -6,6 +6,7 @@
 #include "Characters/CharacterTypes.h"
 #include "PlayerMechCharacter.generated.h"
 
+class AWeapon;
 class AItem;
 class UCameraComponent;
 class USpringArmComponent;
@@ -48,6 +49,10 @@ protected:
 	 */
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	bool ShouldDisarm() const;
+	bool ShouldArm() const;
+	void DisarmArm(FName Section, ECharacterStates States);
+	void PickUpWeapon(AWeapon* OverlappingWeapon);
 	void Interact();
 	void Attack();
 
@@ -58,8 +63,15 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
 	bool CanAttack() const;
+	void PlayEquipMontage(FName SectionName) const;
+	UFUNCTION(BlueprintCallable)
+	void EquipEnd();
+	UFUNCTION(BlueprintCallable)
+	void Arm();
+	UFUNCTION(BlueprintCallable)
+	void Disarm();
 private:
-	ECharacterStates CharacterStates = ECharacterStates::ECS_Unequipped;
+	ECharacterStates CharacterStates = ECharacterStates::ECS_NoWeapon;
 	EActionStates ActionStates = EActionStates::EAS_Unoccupied;
 	
 	UPROPERTY(VisibleAnywhere)
@@ -72,6 +84,8 @@ private:
 	TObjectPtr<UGroomComponent> Eyebrows;
 	UPROPERTY(VisibleInstanceOnly)
 	TObjectPtr<AItem> OverlappingItem;
+	UPROPERTY(VisibleAnywhere, Category = Weapon)
+	TObjectPtr<AWeapon> EquippedWeapon{nullptr};
 
 
 
@@ -80,9 +94,14 @@ private:
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	TObjectPtr<UAnimMontage> AttackMontage;
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	TObjectPtr<UAnimMontage> EquipMontage;
 
 
 public:
+	/**
+	 * Getters and setters
+	 */
 	FORCEINLINE void SetOverlappingItem(AItem* Item) {OverlappingItem = Item;}
 	FORCEINLINE ECharacterStates GetCharacterStates() const {return CharacterStates;}
 };

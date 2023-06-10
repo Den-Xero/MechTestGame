@@ -51,6 +51,7 @@ void APlayerMechCharacter::BeginPlay()
 
 void APlayerMechCharacter::Move(const FInputActionValue& Value)
 {
+	if(ActionStates != EActionStates::EAS_Unoccupied) return;
 	const FVector2d MoveAxisValue = Value.Get<FVector2d>();
 	if(GetController() && MoveAxisValue != FVector2d::Zero())
 	{
@@ -72,12 +73,50 @@ void APlayerMechCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+bool APlayerMechCharacter::ShouldDisarm() const
+{
+	return CharacterStates != ECharacterStates::ECS_Unequipped &&
+		CharacterStates != ECharacterStates::ECS_NoWeapon &&
+			ActionStates == EActionStates::EAS_Unoccupied &&
+				EquipMontage;
+}
+
+bool APlayerMechCharacter::ShouldArm() const
+{
+	return CharacterStates == ECharacterStates::ECS_Unequipped &&
+		ActionStates == EActionStates::EAS_Unoccupied &&
+			EquippedWeapon &&
+				EquipMontage;
+}
+
+void APlayerMechCharacter::DisarmArm(FName Section, ECharacterStates States)
+{
+	PlayEquipMontage(Section);
+	CharacterStates =States;
+	ActionStates = EActionStates::EAS_Equipping;
+}
+
+void APlayerMechCharacter::PickUpWeapon(AWeapon* OverlappingWeapon)
+{
+	OverlappingWeapon->Equip(GetMesh(), TEXT("RightHandSocket"));
+	CharacterStates = ECharacterStates::ECS_EquippedOneHandedWeapon;
+	OverlappingItem = nullptr;
+	EquippedWeapon = OverlappingWeapon;
+}
+
 void APlayerMechCharacter::Interact()
 {
 	if(AWeapon* OverlappingWeapon = Cast<AWeapon>(OverlappingItem))
 	{
-		OverlappingWeapon->Equip(GetMesh(), TEXT("RightHandSocket"));
-		CharacterStates = ECharacterStates::ECS_EquippedOneHandedWeapon;
+		PickUpWeapon(OverlappingWeapon);
+	}
+	else if (ShouldDisarm())
+	{
+		DisarmArm( FName("Unequipped"), ECharacterStates::ECS_Unequipped);
+	}
+	else if (ShouldArm())
+	{
+		DisarmArm( FName("Equip"), ECharacterStates::ECS_EquippedOneHandedWeapon);
 	}
 }
 
@@ -106,6 +145,39 @@ void APlayerMechCharacter::PlayAttackMontage() const
 	}
 }
 
+void APlayerMechCharacter::PlayEquipMontage(FName SectionName) const
+{
+	if(UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->Montage_Play(EquipMontage);
+		
+		AnimInstance->Montage_JumpToSection(SectionName, EquipMontage);
+	}
+}
+
+void APlayerMechCharacter::EquipEnd()
+{
+	ActionStates = EActionStates::EAS_Unoccupied;
+}
+
+void APlayerMechCharacter::Arm()
+{
+	if(EquippedWeapon)
+	{
+		EquippedWeapon->AttachToSocket(GetMesh(), TEXT("RightHandSocket"));
+	}
+	
+}
+
+void APlayerMechCharacter::Disarm()
+{
+	if(EquippedWeapon)
+	{
+		EquippedWeapon->AttachToSocket(GetMesh(), TEXT("SpineSocket"));
+	}
+	
+}
+
 void APlayerMechCharacter::AttackEnd()
 {
 	ActionStates = EActionStates::EAS_Unoccupied;
@@ -114,7 +186,8 @@ void APlayerMechCharacter::AttackEnd()
 bool APlayerMechCharacter::CanAttack() const
 {
 	return ActionStates == EActionStates::EAS_Unoccupied &&
-		CharacterStates != ECharacterStates::ECS_Unequipped;
+		CharacterStates != ECharacterStates::ECS_Unequipped &&
+			CharacterStates != ECharacterStates::ECS_NoWeapon;
 }
 
 void APlayerMechCharacter::Attack()
@@ -150,6 +223,7 @@ void APlayerMechCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 void APlayerMechCharacter::Jump()
 {
+	if(ActionStates != EActionStates::EAS_Unoccupied) return;
 	Super::Jump();
 }
 

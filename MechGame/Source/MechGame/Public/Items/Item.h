@@ -5,6 +5,15 @@
 
 class USphereComponent;
 
+
+enum class EItemStates : uint8
+{
+	EIS_Hovering UMETA(DisplayName = "Hovering"),
+	EIS_Equipped UMETA(DisplayName = "Equipped")
+	
+};
+
+
 UCLASS()
 class MECHGAME_API AItem : public AActor
 {
@@ -26,6 +35,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> ItemMesh;
+	UPROPERTY(EditAnywhere, Category = Sounds)
+	TObjectPtr<USoundBase> PickUpSound;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USphereComponent> Sphere;
+	EItemStates ItemStates = EItemStates::EIS_Hovering;
 	
 	template<typename  Type>
 	static Type Avg(Type first, Type second);
@@ -38,8 +52,7 @@ private:
 	float TimeConstant = 5.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"), Category = "Rotation")
 	float Rotate = 50.f;
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USphereComponent> Sphere;
+	
 };
 
 template <typename Type>
