@@ -30,7 +30,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	bool CanAttack() const;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
@@ -55,21 +56,27 @@ protected:
 	void PickUpWeapon(AWeapon* OverlappingWeapon);
 	void Interact();
 	void Attack();
+	
 
 	/**
 	 * Play montage functions
 	 */
 	void PlayAttackMontage() const;
-	UFUNCTION(BlueprintCallable)
-	void AttackEnd();
-	bool CanAttack() const;
-	void PlayEquipMontage(FName SectionName) const;
-	UFUNCTION(BlueprintCallable)
-	void EquipEnd();
-	UFUNCTION(BlueprintCallable)
-	void Arm();
-	UFUNCTION(BlueprintCallable)
-	void Disarm();
+	void PlayEquipMontage(const FName& SectionName) const;
+	
+	/**
+	 * montage notify functions
+	 */
+		UFUNCTION(BlueprintCallable)
+    	void EquipEnd();
+    	UFUNCTION(BlueprintCallable)
+    	void Arm();
+    	UFUNCTION(BlueprintCallable)
+    	void Disarm();
+    	UFUNCTION(BlueprintCallable)
+    	void ChangeAttackCollisionType(ECollisionEnabled::Type NewCollisionType);
+		UFUNCTION(BlueprintCallable)
+        void AttackEnd();
 private:
 	ECharacterStates CharacterStates = ECharacterStates::ECS_NoWeapon;
 	EActionStates ActionStates = EActionStates::EAS_Unoccupied;

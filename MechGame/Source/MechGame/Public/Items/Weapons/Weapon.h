@@ -33,7 +33,12 @@ protected:
 	TObjectPtr<USceneComponent> BoxTraceEnd;
 
 private:
-	
-	
-	
+
+
+public:
+	/**
+	 * Getters and setters
+	 */
+	FORCEINLINE void SetWeaponDamageBoxCollisionType(ECollisionEnabled::Type NewCollisionType) const;
+
 };

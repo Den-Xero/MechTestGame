@@ -5,7 +5,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GroomComponent.h"
-#include "Items/Item.h"
 #include "Items/Weapons/Weapon.h"
 
 APlayerMechCharacter::APlayerMechCharacter()
@@ -145,7 +144,7 @@ void APlayerMechCharacter::PlayAttackMontage() const
 	}
 }
 
-void APlayerMechCharacter::PlayEquipMontage(FName SectionName) const
+void APlayerMechCharacter::PlayEquipMontage(const FName& SectionName) const
 {
 	if(UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
 	{
@@ -176,6 +175,14 @@ void APlayerMechCharacter::Disarm()
 		EquippedWeapon->AttachToSocket(GetMesh(), TEXT("SpineSocket"));
 	}
 	
+}
+
+void APlayerMechCharacter::ChangeAttackCollisionType(ECollisionEnabled::Type NewCollisionType)
+{
+	if(EquippedWeapon)
+	{
+		EquippedWeapon->SetWeaponDamageBoxCollisionType(NewCollisionType);
+	}
 }
 
 void APlayerMechCharacter::AttackEnd()

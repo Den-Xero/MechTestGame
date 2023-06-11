@@ -1,8 +1,8 @@
 #include "Items/Weapons/Weapon.h"
 
-#include "Characters/PlayerMechCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
+#include "Interfaces/HitInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -11,8 +11,8 @@ AWeapon::AWeapon()
 	WeaponDamageBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Weapon Damage Box "));
 	WeaponDamageBox->SetupAttachment(GetRootComponent());
 	WeaponDamageBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	WeaponDamageBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	WeaponDamageBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	WeaponDamageBox->SetCollisionResponseToAllChannels(ECR_Overlap);
+	WeaponDamageBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 
 	BoxTraceStart = CreateDefaultSubobject<USceneComponent>(TEXT("Box trace start"));
 	BoxTraceStart->SetupAttachment(GetRootComponent());
@@ -53,10 +53,6 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
 		{
 			Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
-		if(WeaponDamageBox)
-		{
-			WeaponDamageBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		}
 		
 	}
 }
@@ -96,6 +92,18 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 			ActorsToIgnore,EDrawDebugTrace::ForDuration,
 			HitResult, true);
 
-		
+		if(AActor* HitActor = HitResult.GetActor())
+		{
+			if(IHitInterface* HitInterface = Cast<IHitInterface>(HitActor))
+			{
+				HitInterface->GetHit(HitResult.ImpactPoint);
+			}
+			
+		}
 	}
+}
+
+void AWeapon::SetWeaponDamageBoxCollisionType(ECollisionEnabled::Type NewCollisionType) const
+{
+	if(WeaponDamageBox) WeaponDamageBox->SetCollisionEnabled(NewCollisionType);
 }
