@@ -13,17 +13,24 @@ class MECHGAME_API AWeapon : public AItem
 
 public:
 	AWeapon();
+	
 	virtual void Tick(float DeltaTime) override;
-	void AttachToSocket(USceneComponent* InParent, FName InSocketName);
+	void AttachToSocket(USceneComponent* InParent, FName InSocketName) const;
 
 	void Equip(USceneComponent* InParent, FName InSocketName);
 
 protected:
+	virtual void BeginPlay() override;
 	virtual  void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult) override;
 	virtual  void EndSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
-	
+	UFUNCTION()
+	virtual void OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	TObjectPtr<UBoxComponent> WeaponDamageBox;
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	TObjectPtr<USceneComponent> BoxTraceStart;
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	TObjectPtr<USceneComponent> BoxTraceEnd;
 
 private:
 	
