@@ -14,12 +14,19 @@ public:
 	AEnemy();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	double GetAngle(const FVector& Side, const FVector& ToHit) const;
+	static bool IsEitherSideOf45(const float& SideAngle);
+	void DirectionalHitReaction(const FVector& ImpactPoint) const;
 
 	virtual void GetHit(const FVector& ImpactPoint) override;
 protected:
 	virtual void BeginPlay() override;
 
-
+	UPROPERTY(EditAnywhere, Category = Sounds)
+	TObjectPtr<USoundBase> HitSounds;
+	UPROPERTY(EditAnywhere, Category = VisualEffects)
+	TObjectPtr<UParticleSystem> HitParticleSystem;
+	
 	/**
 	 * Play montage functions
 	 */

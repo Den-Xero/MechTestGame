@@ -1,5 +1,6 @@
 #include "Enemy/Enemy.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "MechGame/DebugMacros.h"
 
@@ -47,15 +48,23 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void AEnemy::GetHit(const FVector& ImpactPoint)
+double AEnemy::GetAngle(const FVector& Side, const FVector& ToHit) const
 {
-	DRAWSPHEREWITHCOLOUR(ImpactPoint, FColor::Emerald);
-	
+	return FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(Side, ToHit)));
+}
 
+bool AEnemy::IsEitherSideOf45(const float& SideAngle)
+{
+	return SideAngle >= -45.f && SideAngle <= 45.f;
+}
+
+void AEnemy::DirectionalHitReaction(const FVector& ImpactPoint) const
+{
 	const FVector Front  = GetActorForwardVector();
 	const FVector Back = -Front;
 	const FVector Right = GetActorRightVector();
 	const FVector Left = -Right;
+	
 	//Lowing the impact point to enemy's location z
 	const FVector ImpactedLowered(ImpactPoint.X, ImpactPoint.Y, GetActorLocation().Z);
 	const FVector ToHit = (ImpactedLowered - GetActorLocation()).GetSafeNormal();
@@ -64,18 +73,34 @@ void AEnemy::GetHit(const FVector& ImpactPoint)
 	//Forward * ToHit = cos(theta)
 	//Acos(cos(theta)) = theta
 	//Convert from radians to degrees
-	const float FrontAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(Front, ToHit)));
-	const float BackAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(Back, ToHit)));
-	const float RightAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(Right, ToHit)));
-	const float LeftAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(Left, ToHit)));
+	const float FrontAngle = GetAngle(Front, ToHit);
+	const float BackAngle = GetAngle(Back, ToHit);
+	const float RightAngle = GetAngle(Right, ToHit);
+	const float LeftAngle = GetAngle(Left, ToHit);
 
 	//Find the angle that is within 45 either side.
 	FName SectionName;
-	if(FrontAngle >= -45.f && FrontAngle <= 45.f) SectionName = FName("FromFront");
-	else if(BackAngle >= -45.f && BackAngle <= 45.f) SectionName = FName("FromBack");
-	else if(RightAngle >= -45.f && RightAngle <= 45.f) SectionName = FName("FromRight");
-	else if(LeftAngle >= -45.f && LeftAngle <= 45.f) SectionName = FName("FromLeft");
+	if (IsEitherSideOf45(FrontAngle)) SectionName = FName("FromFront");
+	else if (IsEitherSideOf45(BackAngle)) SectionName = FName("FromBack");
+	else if (IsEitherSideOf45(RightAngle)) SectionName = FName("FromRight");
+	else if (IsEitherSideOf45(LeftAngle)) SectionName = FName("FromLeft");
 
 	PlayHitReactMontage(SectionName);
+}
+
+void AEnemy::GetHit(const FVector& ImpactPoint)
+{
+	DirectionalHitReaction(ImpactPoint);
+
+	if(HitSounds)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, HitSounds, ImpactPoint);
+	}
+
+	if(HitParticleSystem)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(this, HitParticleSystem, ImpactPoint);
+	}
+	
 }
 

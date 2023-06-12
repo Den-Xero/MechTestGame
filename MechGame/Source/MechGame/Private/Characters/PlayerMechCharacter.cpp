@@ -182,6 +182,7 @@ void APlayerMechCharacter::ChangeAttackCollisionType(ECollisionEnabled::Type New
 	if(EquippedWeapon)
 	{
 		EquippedWeapon->SetWeaponDamageBoxCollisionType(NewCollisionType);
+		EquippedWeapon->IgnoreActors.Empty();
 	}
 }
 
