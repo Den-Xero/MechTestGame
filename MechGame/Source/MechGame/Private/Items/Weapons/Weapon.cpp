@@ -94,9 +94,11 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		{
 			if(IHitInterface* HitInterface = Cast<IHitInterface>(HitActor))
 			{
-				HitInterface->GetHit(HitResult.ImpactPoint);
+				HitInterface->Execute_GetHit(HitActor, HitResult.ImpactPoint);
 			}
 			IgnoreActors.AddUnique(HitActor);
+
+			CreateField(HitResult.ImpactPoint);
 		}
 	}
 }

@@ -18,7 +18,7 @@ public:
 	static bool IsEitherSideOf45(const float& SideAngle);
 	void DirectionalHitReaction(const FVector& ImpactPoint) const;
 
-	virtual void GetHit(const FVector& ImpactPoint) override;
+	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 protected:
 	virtual void BeginPlay() override;
 
