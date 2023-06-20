@@ -25,10 +25,12 @@ protected:
 	virtual void GetHit_Implementation(const FVector& ImpactPoint) override;
 	UPROPERTY(EditAnywhere, Category = "Spawnable objects")
 	TArray<TSubclassOf<ATreasure>> TreasureBPClasses;
-	UPROPERTY(BlueprintReadWrite)
-	TObjectPtr<UCapsuleComponent> Capsule;
-
-	virtual void OnChaosBreak(const FChaosBreakEvent& BreakEvent);
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UCapsuleComponent> StopPlayerCapsuleComponent;
+	UFUNCTION()
+	virtual void OnBreak(const FChaosBreakEvent& BreakEvent);
+	UPROPERTY(EditAnywhere, Category = "Spawnable objects")
+	float AddToZ = 0;
 private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UGeometryCollectionComponent> GeometryCollection;

@@ -1,5 +1,8 @@
 #include "Enemy/Enemy.h"
+
+#include "Components/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "MechGame/DebugMacros.h"
@@ -16,14 +19,20 @@ AEnemy::AEnemy()
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	
-	
+	Attributes = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attributes"));
+	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Healthbar"));
+	HealthBarWidget->SetupAttachment(GetRootComponent());
 
 }
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if(HealthBarWidget)
+	{
+		HealthBarWidget->SetHealthPercent(1.f);
+	}
 }
 
 void AEnemy::PlayHitReactMontage(const FName& SectionName) const
@@ -39,13 +48,25 @@ void AEnemy::PlayHitReactMontage(const FName& SectionName) const
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 }
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	if(Attributes && HealthBarWidget)
+	{
+		Attributes->ReceiveDamage(DamageAmount);
+		HealthBarWidget->SetHealthPercent(Attributes->GetHealthPercent());
+
+	}
+	return DamageAmount;
 }
 
 double AEnemy::GetAngle(const FVector& Side, const FVector& ToHit) const

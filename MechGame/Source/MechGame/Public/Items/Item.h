@@ -3,6 +3,7 @@
 #include "GameFramework/Actor.h"
 #include "Item.generated.h"
 
+class UNiagaraComponent;
 class USphereComponent;
 
 
@@ -35,6 +36,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> ItemMesh;
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UNiagaraComponent> NiagaraSystem;
 	UPROPERTY(EditAnywhere, Category = Sounds)
 	TObjectPtr<USoundBase> PickUpSound;
 	UPROPERTY(VisibleAnywhere)

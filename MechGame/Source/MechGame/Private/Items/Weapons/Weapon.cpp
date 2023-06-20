@@ -1,5 +1,6 @@
 #include "Items/Weapons/Weapon.h"
 
+#include "NiagaraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Interfaces/HitInterface.h"
@@ -42,9 +43,11 @@ void AWeapon::AttachToSocket(USceneComponent* InParent, FName InSocketName) cons
 	ItemMesh->AttachToComponent(InParent, TransformRules, InSocketName);
 }
 
-void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
+void AWeapon::Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator)
 {
 	AttachToSocket(InParent, InSocketName);
+	SetOwner(NewOwner);
+	SetInstigator(NewInstigator);
 	ItemStates = EItemStates::EIS_Equipped;
 	if(PickUpSound)
 	{
@@ -53,7 +56,10 @@ void AWeapon::Equip(USceneComponent* InParent, FName InSocketName)
 		{
 			Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
-		
+		if(NiagaraSystem)
+		{
+			NiagaraSystem->Deactivate();
+		}
 	}
 }
 
@@ -99,6 +105,8 @@ void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 			IgnoreActors.AddUnique(HitActor);
 
 			CreateField(HitResult.ImpactPoint);
+
+			UGameplayStatics::ApplyDamage(HitActor, Damage, GetInstigatorController(), this, UDamageType::StaticClass());
 		}
 	}
 }

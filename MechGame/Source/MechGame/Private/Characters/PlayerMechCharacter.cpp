@@ -97,7 +97,7 @@ void APlayerMechCharacter::DisarmArm(FName Section, ECharacterStates States)
 
 void APlayerMechCharacter::PickUpWeapon(AWeapon* OverlappingWeapon)
 {
-	OverlappingWeapon->Equip(GetMesh(), TEXT("RightHandSocket"));
+	OverlappingWeapon->Equip(GetMesh(), TEXT("RightHandSocket"), this, this);
 	CharacterStates = ECharacterStates::ECS_EquippedOneHandedWeapon;
 	OverlappingItem = nullptr;
 	EquippedWeapon = OverlappingWeapon;

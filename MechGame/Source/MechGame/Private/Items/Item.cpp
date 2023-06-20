@@ -2,6 +2,7 @@
 
 #include "Characters/PlayerMechCharacter.h"
 #include "Components/SphereComponent.h"
+#include "NiagaraComponent.h"
 #include  "MechGame/DebugMacros.h"
 
 
@@ -16,6 +17,9 @@ AItem::AItem()
 
 	Sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere"));
 	Sphere->SetupAttachment(GetRootComponent());
+
+	NiagaraSystem = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Niagara Syetem"));
+	NiagaraSystem->SetupAttachment(GetRootComponent());
 }
 
 void AItem::BeginPlay()

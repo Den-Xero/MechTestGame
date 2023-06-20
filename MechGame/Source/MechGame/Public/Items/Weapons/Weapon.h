@@ -17,7 +17,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void AttachToSocket(USceneComponent* InParent, FName InSocketName) const;
 
-	void Equip(USceneComponent* InParent, FName InSocketName);
+	void Equip(USceneComponent* InParent, FName InSocketName, AActor* NewOwner, APawn* NewInstigator);
 	UPROPERTY()
 	TArray<AActor*> IgnoreActors;
 protected:
@@ -35,6 +35,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void CreateField(const FVector& FieldLocation);
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	float Damage = 20.f;
 private:
 	
 
