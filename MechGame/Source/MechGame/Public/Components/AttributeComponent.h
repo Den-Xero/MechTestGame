@@ -34,5 +34,6 @@ public:
 	 */
 	void ReceiveDamage(const float Damage);
 	float GetHealthPercent() const;
+	bool IsAlive() const;
 		
 };

@@ -32,6 +32,7 @@ void AEnemy::BeginPlay()
 	if(HealthBarWidget)
 	{
 		HealthBarWidget->SetHealthPercent(1.f);
+		HealthBarWidget->SetVisibility(false);
 	}
 }
 
@@ -45,10 +46,72 @@ void AEnemy::PlayHitReactMontage(const FName& SectionName) const
 	
 }
 
+void AEnemy::SetHealthBarVis(bool IsVisible) const
+{
+	if(HealthBarWidget)
+	{
+		HealthBarWidget->SetVisibility(IsVisible);
+	}
+}
+
+void AEnemy::Die()
+{
+	if(UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); AnimInstance && DeathMontage)
+	{
+		AnimInstance->Montage_Play(DeathMontage);
+		const int32 Selection = FMath::RandRange(0, 5);
+		FName SectionName = FName();
+		switch(Selection)
+		{
+		case 0:
+			SectionName = TEXT("Death1");
+			DeathPose = EDeathPose::EDP_Death1;
+			break;
+		case 1:
+			SectionName = TEXT("Death2");
+			DeathPose = EDeathPose::EDP_Death2;
+			break;
+		case 2:
+			SectionName = TEXT("Death3");
+			DeathPose = EDeathPose::EDP_Death3;
+			break;
+		case 3:
+			SectionName = TEXT("Death4");
+			DeathPose = EDeathPose::EDP_Death4;
+			break;
+		case 4:
+			SectionName = TEXT("Death5");
+			DeathPose = EDeathPose::EDP_Death5;
+			break;
+		case 5:
+			SectionName = TEXT("Death6");
+			DeathPose = EDeathPose::EDP_Death6;
+			break;
+		default:
+			SectionName = TEXT("Death1");
+			DeathPose = EDeathPose::EDP_Death1;
+		}
+		AnimInstance->Montage_JumpToSection(SectionName, DeathMontage);
+	}
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetLifeSpan(5.f);
+	SetHealthBarVis(false);
+}
+
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
+	if(CombatTarget)
+	{
+		const double DistanceToTarget = (CombatTarget->GetActorLocation() - GetActorLocation()).Size();
+		if(DistanceToTarget > CombatRadius)
+		{
+			SetHealthBarVis(false);
+			CombatTarget = nullptr;
+		}
+	}
 }
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -64,8 +127,8 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 	{
 		Attributes->ReceiveDamage(DamageAmount);
 		HealthBarWidget->SetHealthPercent(Attributes->GetHealthPercent());
-
 	}
+	CombatTarget = EventInstigator->GetPawn();
 	return DamageAmount;
 }
 
@@ -111,7 +174,17 @@ void AEnemy::DirectionalHitReaction(const FVector& ImpactPoint) const
 
 void AEnemy::GetHit_Implementation(const FVector& ImpactPoint)
 {
-	DirectionalHitReaction(ImpactPoint);
+	SetHealthBarVis(true);
+	if(Attributes && Attributes->IsAlive())
+	{
+		DirectionalHitReaction(ImpactPoint);
+	}
+	else if(Attributes)
+	{
+		Die();
+	}
+	
+	
 
 	if(HitSounds)
 	{

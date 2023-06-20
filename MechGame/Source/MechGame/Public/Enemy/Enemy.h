@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Characters/CharacterTypes.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/HitInterface.h"
 #include "Enemy.generated.h"
@@ -30,11 +31,22 @@ protected:
 	TObjectPtr<USoundBase> HitSounds;
 	UPROPERTY(EditAnywhere, Category = VisualEffects)
 	TObjectPtr<UParticleSystem> HitParticleSystem;
+
+	UPROPERTY(BlueprintReadOnly)
+	EDeathPose DeathPose = EDeathPose::EDP_Alive;
 	
+	void SetHealthBarVis(bool IsVisible) const;
+
+	UPROPERTY()
+	TObjectPtr<AActor> CombatTarget;
+	UPROPERTY(EditAnywhere)
+	double CombatRadius = 500.f;
 	/**
 	 * Play montage functions
 	 */
 	void PlayHitReactMontage(const FName& SectionName) const;
+	
+	void Die();
 
 private:
 	/**
@@ -42,10 +54,18 @@ private:
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = Montages)
 	TObjectPtr<UAnimMontage> HitReactMontage;
+	UPROPERTY(EditDefaultsOnly, Category = Montages)
+	TObjectPtr<UAnimMontage> DeathMontage;
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAttributeComponent> Attributes;
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UHealthBarComponent> HealthBarWidget;
+
+
+	
+	
+
+	
 	
 public:	
 	
