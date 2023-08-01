@@ -1,11 +1,15 @@
 #include "Enemy/Enemy.h"
 
+#include "AIController.h"
+#include "NavigationPath.h"
 #include "Components/AttributeComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "HUD/HealthBarComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "MechGame/DebugMacros.h"
+#include "Navigation/PathFollowingComponent.h"
 
 
 AEnemy::AEnemy()
@@ -23,6 +27,10 @@ AEnemy::AEnemy()
 	HealthBarWidget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("Healthbar"));
 	HealthBarWidget->SetupAttachment(GetRootComponent());
 
+    GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	bUseControllerRotationYaw = false;
 }
 
 void AEnemy::BeginPlay()
@@ -34,6 +42,15 @@ void AEnemy::BeginPlay()
 		HealthBarWidget->SetHealthPercent(1.f);
 		HealthBarWidget->SetVisibility(false);
 	}
+
+	EnemyController = Cast<AAIController>(GetController());
+	PatrolNumber = 0;
+	PatrolTarget = PatrolPoints[PatrolNumber];
+}
+
+void AEnemy::PatrolTimerFinished()
+{
+	TestOnce = false;
 }
 
 void AEnemy::PlayHitReactMontage(const FName& SectionName) const
@@ -52,6 +69,13 @@ void AEnemy::SetHealthBarVis(bool IsVisible) const
 	{
 		HealthBarWidget->SetVisibility(IsVisible);
 	}
+}
+
+bool AEnemy::InRange(const AActor* Target, const double Radius) const
+{
+	if(Target == nullptr) return false;
+	const double DistanceToTarget = (Target->GetActorLocation() - GetActorLocation()).Size();
+	return DistanceToTarget <= Radius;
 }
 
 void AEnemy::Die()
@@ -99,19 +123,66 @@ void AEnemy::Die()
 	SetHealthBarVis(false);
 }
 
+void AEnemy::MoveToTarget(const AActor* Target)
+{
+	if(EnemyController == nullptr || Target == nullptr) return;
+	FAIMoveRequest MoveRequest;
+	MoveRequest.SetGoalActor(Target);
+	MoveRequest.SetAcceptanceRadius(15.f);
+	FNavPathSharedPtr NavPath;
+	EnemyController->MoveTo(MoveRequest, &NavPath);
+	if(NavPath && !MoveDoOnce)
+	{
+		MoveDoOnce = true;
+		TArray<FNavPathPoint>& PathPoints = NavPath->GetPathPoints();
+		for (auto& Point : PathPoints)
+		{
+			const FVector& Location = Point.Location;
+			DrawDebugSphere(GetWorld(), Location, 12.f, 12, FColor::Blue, false,10.f);
+		}
+	}
+}
+
+void AEnemy::CheckCombatTarget()
+{
+	if(!InRange(CombatTarget, CombatRadius))
+	{
+		SetHealthBarVis(false);
+		CombatTarget = nullptr;
+	}
+}
+
+void AEnemy::Patrol()
+{
+	if(!TestOnce)
+	{
+		MoveToTarget(PatrolTarget);
+	}
+	
+	if(InRange(PatrolTarget, PatrolRadius))
+	{
+		PatrolNumber++;
+		MoveDoOnce = false;
+		TestOnce = true;
+		if(PatrolNumber >= PatrolPoints.Num())
+		{
+			PatrolNumber = 0;
+		}
+		PatrolTarget = PatrolPoints[PatrolNumber];
+		const float Selected = FMath::RandRange(MinWait, MaxTime);
+		GetWorldTimerManager().SetTimer(PatrolTimer, this, &AEnemy::PatrolTimerFinished, Selected);
+	}
+}
+
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(CombatTarget)
-	{
-		const double DistanceToTarget = (CombatTarget->GetActorLocation() - GetActorLocation()).Size();
-		if(DistanceToTarget > CombatRadius)
-		{
-			SetHealthBarVis(false);
-			CombatTarget = nullptr;
-		}
-	}
+	CheckCombatTarget();
+	
+	Patrol();
+
+	
 }
 
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

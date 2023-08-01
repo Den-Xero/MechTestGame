@@ -6,6 +6,7 @@
 #include "Interfaces/HitInterface.h"
 #include "Enemy.generated.h"
 
+class AAIController;
 class UHealthBarComponent;
 class UAttributeComponent;
 
@@ -41,12 +42,42 @@ protected:
 	TObjectPtr<AActor> CombatTarget;
 	UPROPERTY(EditAnywhere)
 	double CombatRadius = 500.f;
+	
+
+	bool InRange(const AActor* Target, double Radius) const;
+	/**
+	 * Navigation
+	 */
+	TObjectPtr<AAIController> EnemyController;
+	//Current point to patrol to.
+	UPROPERTY(EditInstanceOnly, Category = " AI Navigation")
+	TObjectPtr<AActor> PatrolTarget;
+	int PatrolNumber;
+	//List of patrol points
+	UPROPERTY(EditInstanceOnly, Category = " AI Navigation")
+	TArray<AActor*> PatrolPoints;
+	UPROPERTY(EditAnywhere, Category = " AI Navigation")
+	double PatrolRadius = 200.f;
+	UPROPERTY(EditAnywhere, Category = " AI Navigation")
+	float MinWait = 5.f;
+	UPROPERTY(EditAnywhere, Category = " AI Navigation")
+	float MaxTime = 10.f;
+	FTimerHandle PatrolTimer;
+	void PatrolTimerFinished();
+	
 	/**
 	 * Play montage functions
 	 */
 	void PlayHitReactMontage(const FName& SectionName) const;
 	
+
+
+
+
 	void Die();
+	void MoveToTarget(const AActor* Target);
+	void CheckCombatTarget();
+	void Patrol();
 
 private:
 	/**
@@ -62,9 +93,8 @@ private:
 	TObjectPtr<UHealthBarComponent> HealthBarWidget;
 
 
-	
-	
-
+	bool MoveDoOnce = false;
+	bool TestOnce = false;
 	
 	
 public:	
